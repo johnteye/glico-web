@@ -1,103 +1,131 @@
-import Image from "next/image";
+"use client";
+import React, { useState, useMemo } from "react";
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+const InsuranceCalculator = () => {
+  const [currency, setCurrency] = useState("GHS");
+  const [product, setProduct] = useState("Fire");
+  const [basePremium, setBasePremium] = useState<number>(10000);
+
+  // Rates
+  const fireLevyRate = 0.01; // 1%
+  const nhilRate = 0.025; // 2.5%
+  const getFundRate = 0.025; // 2.5%
+  const covidRate = 0.01; // 1%
+  const vatRate = 0.15; // 15%
+
+  // Calculations
+  const calculations = useMemo(() => {
+    const fireLevy = product === "Fire" ? basePremium * fireLevyRate : 0;
+    const nhil = basePremium * nhilRate;
+    const getFund = basePremium * getFundRate;
+    const covid = basePremium * covidRate;
+
+    const subtotal = basePremium + fireLevy + nhil + getFund + covid;
+    const vat = subtotal * vatRate;
+    const total = subtotal + vat;
+
+    return { fireLevy, nhil, getFund, covid, subtotal, vat, total };
+  }, [basePremium, product]);
+
+  return ( 
+  
+  <div className="max-w-xl mx-auto bg-white shadow-lg rounded-lg p-6 space-y-6 mt-9 ">
+   
+      <h2 className="text-xl font-bold text-gray-800">Insurance Calculator</h2>
+
+      {/* Currency */}
+      <div>
+        <label className="block font-medium">Currency</label>
+      
+        <select
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
+          className="w-full border rounded-md px-3 py-2"
+        >
+          <option value="USD">USD</option>
+          <option value="EURO">EURO</option>
+          <option value="GBP">GBP</option>
+          <option value="AUD">AUD</option>
+        </select>
+      </div>
+
+      {/* Product Selection */}
+      <div>
+        <label className="block font-medium">Product</label>
+        <select
+          value={product}
+          onChange={(e) => setProduct(e.target.value)}
+          className="w-full border rounded-md px-3 py-2"
+        >
+          <option value="Fire">Fire</option>
+          <option value="Accident">Accident</option>
+          <option value="Marine">Marine</option>
+          <option value="Engineering">Engineering</option>
+        </select>
+      </div>
+
+      {/* Base Premium */}
+      <div>
+        <label className="block font-medium">Base Premium (BP)</label>
+        <input
+          type="number"
+          value={basePremium}
+          onChange={(e) => setBasePremium(Number(e.target.value))}
+          className="w-full border rounded-md px-3 py-2"
         />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* Levies */}
+      <div className="space-y-2">
+        {product === "Fire" && (
+          <p className="flex justify-between">
+            <span>Fire Levy (1%)</span>
+            <span>{calculations.fireLevy.toFixed(2)}</span>
+          </p>
+        )}
+        <p className="flex justify-between">
+          <span>NHIL (2.5%)</span>
+          <span>{calculations.nhil.toFixed(2)}</span>
+        </p>
+        <p className="flex justify-between">
+          <span>GetFund (2.5%)</span>
+          <span>{calculations.getFund.toFixed(2)}</span>
+        </p>
+        <p className="flex justify-between">
+          <span>Covid-19 Levy (1%)</span>
+          <span>{calculations.covid.toFixed(2)}</span>
+        </p>
+      </div>
+
+      {/* Subtotal */}
+      <div className="flex justify-between font-semibold border-t pt-2">
+        <span>Subtotal</span>
+        <span>{calculations.subtotal.toFixed(2)}</span>
+      </div>
+
+      {/* VAT */}
+      <div className="flex justify-between">
+        <span>VAT (15%)</span>
+        <span>{calculations.vat.toFixed(2)}</span>
+      </div>
+
+      {/* Total */}
+      <div className="flex justify-between text-lg font-bold border-t pt-2">
+        <span>Total</span>
+        <span>{calculations.total.toFixed(2)}</span>
+      </div>
+
+      {/* Print Button */}
+      <div className="text-center">
+        <button
+          onClick={() => window.print()}
+          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Print
+        </button>
+      </div>
     </div>
   );
-}
+};
+
+export default InsuranceCalculator;
